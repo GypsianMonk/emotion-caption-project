@@ -1,0 +1,58 @@
+model:
+  name: "InceptionV3_LSTM_Captioning"
+  encoder:
+    backbone: "InceptionV3"
+    input_shape: [299, 299, 3]
+    feature_dim: 2048
+    projection_dim: 512
+    fine_tune_from_layer: "mixed7"   # Set null to freeze entire encoder
+    fine_tune: false
+  decoder:
+    embedding_dim: 256
+    lstm_units: 512
+    lstm_layers: 2
+    attention_units: 512
+    dropout: 0.5
+    recurrent_dropout: 0.1
+  vocab:
+    max_vocab_size: 10000
+    max_caption_length: 50
+    oov_token: "<OOV>"
+    pad_token: "<PAD>"
+    start_token: "<START>"
+    end_token: "<END>"
+
+training:
+  batch_size: 64
+  epochs: 20
+  learning_rate: 0.001
+  optimizer: "adam"
+  loss: "sparse_categorical_crossentropy"
+  teacher_forcing: true
+  gradient_clip_norm: 5.0
+  early_stopping:
+    patience: 5
+    monitor: "val_loss"
+    restore_best_weights: true
+  reduce_lr:
+    patience: 3
+    factor: 0.5
+    min_lr: 0.000001
+    monitor: "val_loss"
+
+evaluation:
+  beam_width: 3
+  max_caption_length: 50
+  bleu_weights:
+    bleu1: [1.0, 0.0, 0.0, 0.0]
+    bleu2: [0.5, 0.5, 0.0, 0.0]
+    bleu3: [0.33, 0.33, 0.33, 0.0]
+    bleu4: [0.25, 0.25, 0.25, 0.25]
+
+paths:
+  data_dir: "data/raw/coco"
+  features_cache: "data/processed/coco_features"
+  tokenizer_path: "data/processed/tokenizer.json"
+  checkpoint_dir: "checkpoints/captioning"
+  log_dir: "logs/captioning"
+  export_dir: "exports/captioning"
