@@ -1,1 +1,524 @@
-404: Not Found
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Emotion Detection & Image Captioning</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --border: #1e1e2e;
+      --accent: #7c3aed;
+      --accent2: #06b6d4;
+      --accent3: #10b981;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --card: #13131c;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Grid background ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+    /* ── NAV ── */
+    nav {
+      border-bottom: 1px solid var(--border);
+      padding: 18px 0;
+      backdrop-filter: blur(12px);
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,10,15,0.85);
+    }
+    nav .inner {
+      max-width: 1100px; margin: 0 auto; padding: 0 24px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .nav-logo {
+      font-family: 'Space Mono', monospace;
+      font-size: 14px; color: var(--accent2);
+      letter-spacing: 0.05em;
+    }
+    .nav-links { display: flex; gap: 24px; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none;
+      font-size: 13px; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      background: var(--accent);
+      color: white !important;
+      padding: 7px 16px;
+      border-radius: 6px;
+      font-size: 13px !important;
+    }
+    .nav-cta:hover { background: #6d28d9 !important; color: white !important; }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 100px 0 80px;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(124,58,237,0.12);
+      border: 1px solid rgba(124,58,237,0.3);
+      color: #a78bfa;
+      padding: 6px 16px; border-radius: 999px;
+      font-size: 12px; font-weight: 500;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+    .hero-badge span { width: 6px; height: 6px; background: #7c3aed; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
+
+    h1 {
+      font-size: clamp(36px, 6vw, 68px);
+      font-weight: 600;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+    }
+    h1 .highlight {
+      background: linear-gradient(135deg, #7c3aed, #06b6d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: 18px; color: var(--muted);
+      max-width: 600px; margin: 0 auto 48px;
+      line-height: 1.7; font-weight: 300;
+    }
+
+    .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 24px; border-radius: 8px;
+      font-size: 15px; font-weight: 500;
+      text-decoration: none; transition: all 0.2s;
+      cursor: pointer; border: none;
+    }
+    .btn-primary {
+      background: var(--accent); color: white;
+    }
+    .btn-primary:hover { background: #6d28d9; transform: translateY(-1px); }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── METRICS STRIP ── */
+    .metrics-strip {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: var(--border);
+      border: 1px solid var(--border); border-radius: 12px;
+      overflow: hidden; margin: 64px 0;
+    }
+    .metric {
+      background: var(--card);
+      padding: 28px 24px; text-align: center;
+    }
+    .metric-val {
+      font-family: 'Space Mono', monospace;
+      font-size: 32px; font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .metric-val.purple { color: #a78bfa; }
+    .metric-val.cyan   { color: #67e8f9; }
+    .metric-val.green  { color: #6ee7b7; }
+    .metric-val.orange { color: #fcd34d; }
+    .metric-label { font-size: 12px; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+
+    /* ── SECTION ── */
+    section { padding: 64px 0; }
+    .section-tag {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px; color: var(--accent2);
+      letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-size: 32px; font-weight: 600;
+      letter-spacing: -0.02em; margin-bottom: 16px;
+    }
+    .section-sub { color: var(--muted); font-size: 16px; max-width: 540px; line-height: 1.7; margin-bottom: 40px; }
+
+    /* ── ARCH CARDS ── */
+    .arch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .arch-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 28px;
+      transition: border-color 0.2s;
+    }
+    .arch-card:hover { border-color: var(--accent); }
+    .arch-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .arch-icon {
+      width: 40px; height: 40px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .arch-icon.purple { background: rgba(124,58,237,0.15); }
+    .arch-icon.cyan   { background: rgba(6,182,212,0.15); }
+    .arch-card h3 { font-size: 16px; font-weight: 600; }
+    .arch-card p  { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+
+    .pipeline {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px; color: #94a3b8;
+      line-height: 1.9; margin-top: 16px;
+    }
+    .pipeline .step { display: flex; align-items: center; gap: 8px; }
+    .pipeline .arrow { color: var(--accent); }
+    .pipeline .label { color: var(--accent2); }
+
+    /* ── FEATURES ── */
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px; padding: 24px;
+      transition: all 0.2s;
+    }
+    .feature-card:hover { border-color: rgba(124,58,237,0.4); transform: translateY(-2px); }
+    .feature-icon { font-size: 24px; margin-bottom: 14px; }
+    .feature-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .feature-card p  { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+    /* ── API SECTION ── */
+    .api-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+    .endpoint-list { display: flex; flex-direction: column; gap: 10px; }
+    .endpoint {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px 20px;
+      display: flex; align-items: center; gap: 14px;
+      transition: border-color 0.2s;
+    }
+    .endpoint:hover { border-color: var(--accent2); }
+    .method {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px; font-weight: 700;
+      padding: 3px 8px; border-radius: 4px;
+      min-width: 44px; text-align: center;
+    }
+    .method.post { background: rgba(16,185,129,0.15); color: #6ee7b7; }
+    .method.get  { background: rgba(6,182,212,0.15);  color: #67e8f9; }
+    .endpoint-path { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--text); }
+    .endpoint-desc { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+    .code-block {
+      background: #0d0d14;
+      border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px; line-height: 1.9;
+      color: #94a3b8; overflow-x: auto;
+    }
+    .code-block .kw  { color: #c084fc; }
+    .code-block .str { color: #6ee7b7; }
+    .code-block .num { color: #67e8f9; }
+    .code-block .cm  { color: #475569; }
+
+    /* ── TECH STACK ── */
+    .tech-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+    .tech-pill {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 8px 16px; border-radius: 999px;
+      font-size: 13px; font-weight: 500;
+      display: flex; align-items: center; gap: 6px;
+      transition: all 0.2s;
+    }
+    .tech-pill:hover { border-color: var(--accent); color: var(--accent); }
+    .tech-pill .dot { width: 6px; height: 6px; border-radius: 50%; }
+    .dot-purple { background: #7c3aed; }
+    .dot-cyan   { background: #06b6d4; }
+    .dot-green  { background: #10b981; }
+    .dot-orange { background: #f59e0b; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 0; text-align: center;
+    }
+    footer p { color: var(--muted); font-size: 13px; }
+    footer a { color: var(--accent2); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── DIVIDER ── */
+    .divider { height: 1px; background: var(--border); margin: 8px 0; }
+
+    @media (max-width: 768px) {
+      .metrics-strip { grid-template-columns: repeat(2, 1fr); }
+      .arch-grid, .api-grid { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: 1fr; }
+      h1 { font-size: 36px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="inner">
+      <div class="nav-logo">emotion-caption-project</div>
+      <div class="nav-links">
+        <a href="#architecture">Architecture</a>
+        <a href="#api">API</a>
+        <a href="#stack">Stack</a>
+        <a href="https://github.com/GypsianMonk/emotion-caption-project" target="_blank" class="nav-cta">⭐ GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="container">
+    <div class="hero">
+      <div class="hero-badge">
+        <span></span>
+        Production ML System · End-to-End
+      </div>
+      <h1>
+        Real-Time <span class="highlight">Emotion Detection</span><br/>
+        & Image Captioning
+      </h1>
+      <p class="hero-sub">
+        CNN-based facial emotion recognition at 24 FPS across 7 classes,
+        combined with InceptionV3 + LSTM image captioning trained on 80K COCO images.
+      </p>
+      <div class="hero-buttons">
+        <a href="https://github.com/GypsianMonk/emotion-caption-project" target="_blank" class="btn btn-primary">
+          View on GitHub
+        </a>
+        <a href="#architecture" class="btn btn-ghost">
+          Explore Architecture
+        </a>
+      </div>
+    </div>
+
+    <!-- METRICS -->
+    <div class="metrics-strip">
+      <div class="metric">
+        <div class="metric-val purple">82%</div>
+        <div class="metric-label">Emotion Accuracy</div>
+      </div>
+      <div class="metric">
+        <div class="metric-val cyan">24 FPS</div>
+        <div class="metric-label">Real-Time Speed</div>
+      </div>
+      <div class="metric">
+        <div class="metric-val green">0.28</div>
+        <div class="metric-label">BLEU-4 Score</div>
+      </div>
+      <div class="metric">
+        <div class="metric-val orange">80K</div>
+        <div class="metric-label">COCO Images</div>
+      </div>
+    </div>
+
+    <!-- ARCHITECTURE -->
+    <section id="architecture">
+      <div class="section-tag">// Architecture</div>
+      <h2>Two Parallel Pipelines</h2>
+      <p class="section-sub">Each model is independently trained, optimized, and exportable — then unified in a single real-time inference loop.</p>
+
+      <div class="arch-grid">
+        <div class="arch-card">
+          <div class="arch-card-header">
+            <div class="arch-icon purple">🧠</div>
+            <div>
+              <h3>Emotion Recognition CNN</h3>
+              <p style="margin:0">FER-2013 · 35,887 images · 7 classes</p>
+            </div>
+          </div>
+          <div class="pipeline">
+            <div class="step"><span class="arrow">→</span><span>Input Frame <span class="label">(48×48 grayscale)</span></span></div>
+            <div class="step"><span class="arrow">→</span><span>Conv32 → BN → ReLU → MaxPool</span></div>
+            <div class="step"><span class="arrow">→</span><span>Conv64 → BN → ReLU → MaxPool</span></div>
+            <div class="step"><span class="arrow">→</span><span>Conv128 → BN → ReLU → MaxPool</span></div>
+            <div class="step"><span class="arrow">→</span><span>Conv256 + <span class="label">Residual Block</span></span></div>
+            <div class="step"><span class="arrow">→</span><span>GlobalAvgPool → Dense(512)</span></div>
+            <div class="step"><span class="arrow">→</span><span>Softmax <span class="label">(7 emotions)</span></span></div>
+          </div>
+        </div>
+
+        <div class="arch-card">
+          <div class="arch-card-header">
+            <div class="arch-icon cyan">📷</div>
+            <div>
+              <h3>InceptionV3 + LSTM Captioning</h3>
+              <p style="margin:0">MS-COCO · 80K images · Beam Search</p>
+            </div>
+          </div>
+          <div class="pipeline">
+            <div class="step"><span class="arrow">→</span><span>Image <span class="label">(299×299 RGB)</span></span></div>
+            <div class="step"><span class="arrow">→</span><span>InceptionV3 <span class="label">(frozen, ImageNet)</span></span></div>
+            <div class="step"><span class="arrow">→</span><span>Feature Vector <span class="label">(2048,)</span></span></div>
+            <div class="step"><span class="arrow">→</span><span>Dense Projection <span class="label">(512,)</span></span></div>
+            <div class="step"><span class="arrow">→</span><span>Bahdanau Attention</span></div>
+            <div class="step"><span class="arrow">→</span><span>LSTM Decoder <span class="label">(512 units)</span></span></div>
+            <div class="step"><span class="arrow">→</span><span>Beam Search <span class="label">(width=3)</span></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section>
+      <div class="section-tag">// Features</div>
+      <h2>Production-Grade Design</h2>
+      <p class="section-sub">Built to the same standards as a deployed ML service — not a notebook demo.</p>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h4>Real-Time Pipeline</h4>
+          <p>Emotion detection runs every frame in the main thread. Caption generation runs in a background thread — video never blocks.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🎯</div>
+          <h4>Beam Search Decoder</h4>
+          <p>Length-normalized beam search (width 1–5) with Bahdanau attention. Greedy fallback for low-latency scenarios.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📦</div>
+          <h4>TFLite Export</h4>
+          <p>INT8 quantized emotion model for edge deployment. ~3–4× faster on CPU with less than 1% accuracy drop.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚖️</div>
+          <h4>Class Balancing</h4>
+          <p>FER-2013 is heavily skewed toward Happy/Neutral. Sklearn balanced class weights fix training bias automatically.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🗄️</div>
+          <h4>Feature Caching</h4>
+          <p>InceptionV3 features extracted once and cached per image with MD5 keys. Cuts captioning training time by ~10×.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🐳</div>
+          <h4>Docker Ready</h4>
+          <p>GPU-enabled Dockerfile with health checks, multi-worker uvicorn, and environment variable model loading.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- API -->
+    <section id="api">
+      <div class="section-tag">// REST API</div>
+      <h2>FastAPI Endpoints</h2>
+      <p class="section-sub">Production REST API with Pydantic validation, async handlers, and structured JSON responses.</p>
+
+      <div class="api-grid">
+        <div class="endpoint-list">
+          <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="endpoint-path">/emotion</span>
+            <span class="endpoint-desc">Detect face emotions</span>
+          </div>
+          <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="endpoint-path">/caption</span>
+            <span class="endpoint-desc">Generate image caption</span>
+          </div>
+          <div class="endpoint">
+            <span class="method post">POST</span>
+            <span class="endpoint-path">/pipeline</span>
+            <span class="endpoint-desc">Emotion + caption</span>
+          </div>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="endpoint-path">/health</span>
+            <span class="endpoint-desc">Model status</span>
+          </div>
+          <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="endpoint-path">/metrics</span>
+            <span class="endpoint-desc">FPS + request counts</span>
+          </div>
+        </div>
+
+        <div class="code-block">
+<span class="cm"># Example response: POST /pipeline</span>
+{
+  <span class="str">"caption"</span>: <span class="str">"a person smiling at camera"</span>,
+  <span class="str">"faces_detected"</span>: <span class="num">1</span>,
+  <span class="str">"faces"</span>: [{
+    <span class="str">"bbox"</span>: [<span class="num">120</span>, <span class="num">80</span>, <span class="num">64</span>, <span class="num">64</span>],
+    <span class="str">"emotion"</span>: <span class="str">"happy"</span>,
+    <span class="str">"confidence"</span>: <span class="num">0.934</span>,
+    <span class="str">"all_scores"</span>: {
+      <span class="str">"happy"</span>: <span class="num">0.934</span>,
+      <span class="str">"neutral"</span>: <span class="num">0.041</span>,
+      <span class="str">"sad"</span>: <span class="num">0.012</span>
+    }
+  }],
+  <span class="str">"total_latency_ms"</span>: <span class="num">38.4</span>
+}
+        </div>
+      </div>
+    </section>
+
+    <!-- TECH STACK -->
+    <section id="stack">
+      <div class="section-tag">// Tech Stack</div>
+      <h2>Technologies</h2>
+      <br/>
+      <div class="tech-grid">
+        <div class="tech-pill"><span class="dot dot-orange"></span>TensorFlow 2.12</div>
+        <div class="tech-pill"><span class="dot dot-cyan"></span>InceptionV3</div>
+        <div class="tech-pill"><span class="dot dot-purple"></span>OpenCV</div>
+        <div class="tech-pill"><span class="dot dot-green"></span>FastAPI</div>
+        <div class="tech-pill"><span class="dot dot-orange"></span>LSTM + Attention</div>
+        <div class="tech-pill"><span class="dot dot-cyan"></span>NLTK / BLEU</div>
+        <div class="tech-pill"><span class="dot dot-purple"></span>FER-2013</div>
+        <div class="tech-pill"><span class="dot dot-green"></span>MS-COCO</div>
+        <div class="tech-pill"><span class="dot dot-orange"></span>TFLite</div>
+        <div class="tech-pill"><span class="dot dot-cyan"></span>Docker</div>
+        <div class="tech-pill"><span class="dot dot-purple"></span>scikit-learn</div>
+        <div class="tech-pill"><span class="dot dot-green"></span>pytest</div>
+      </div>
+    </section>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <p>
+        <a href="https://github.com/GypsianMonk/emotion-caption-project" target="_blank">github.com/GypsianMonk/emotion-caption-project</a>
+        &nbsp;·&nbsp; Built with TensorFlow · OpenCV · FastAPI
+      </p>
+    </div>
+  </footer>
+
+</body>
+</html>
