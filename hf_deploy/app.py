@@ -197,21 +197,15 @@ with gr.Blocks(css=css, title="Emotion Detection & Image Captioning") as demo:
             beam_slider = gr.Slider(minimum=1, maximum=5, value=3, step=1, label="Beam Search Width")
             run_btn = gr.Button("🚀 Run Pipeline", variant="primary", size="lg")
 
-            # Load example images if available
-            import os
-            example_dir = os.path.join(os.path.dirname(__file__), "examples")
-            if os.path.isdir(example_dir):
-                example_files = [
-                    [os.path.join(example_dir, f)]
-                    for f in sorted(os.listdir(example_dir))
-                    if f.lower().endswith((".jpg", ".jpeg", ".png", ".webp"))
-                ]
-                if example_files:
-                    gr.Examples(
-                        examples=example_files,
-                        inputs=input_image,
-                        label="Example Images",
-                    )
+            gr.Examples(
+                examples=[
+                    ["examples/happy.jpg"],
+                    ["examples/group.jpg"],
+                    ["examples/outdoor.jpg"],
+                ],
+                inputs=input_image,
+                label="Example Images",
+            )
 
         with gr.Column(scale=1):
             output_image = gr.Image(label="🎯 Emotion Detection", height=300)
