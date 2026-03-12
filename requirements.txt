@@ -1,4 +1,9 @@
-fastapi==0.103.2
-uvicorn==0.23.2
-python-multipart==0.0.6
-pydantic==2.4.2
+gradio==4.19.2
+transformers==4.37.2
+torch==2.1.2
+torchvision==0.16.2
+deepface==0.0.79
+opencv-python-headless==4.8.1.78
+Pillow==10.0.1
+numpy==1.23.5
+tf-keras==2.15.1
