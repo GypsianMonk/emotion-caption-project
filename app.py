@@ -24,7 +24,8 @@ def analyze(image, num_beams):
     probs = torch.softmax(logits, dim=-1)[0]
     labels = emotion_model.config.id2label
     results = sorted([(labels[i], probs[i].item()) for i in range(len(probs))], key=lambda x: x[1], reverse=True)
-    return caption, "\n".join([f"{label}: {score:.1%}" for label, score in results])
+    emotion_lines = [f"{label}: {score:.1%}" for label, score in results]
+    return caption, chr(10).join(emotion_lines)
 
 with gr.Blocks(title="Emotion and Caption AI") as demo:
     gr.Markdown("# Emotion Detection and Image Captioning")
