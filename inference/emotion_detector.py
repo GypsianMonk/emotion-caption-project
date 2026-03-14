@@ -18,7 +18,6 @@ Usage:
 
 import cv2
 import numpy as np
-import tensorflow as tf
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple
 import time
@@ -134,6 +133,7 @@ class EmotionDetector:
         self._fps_buffer = []
 
         if use_tflite:
+            import tensorflow as tf
             self.interpreter = tf.lite.Interpreter(model_path=model_path)
             self.interpreter.allocate_tensors()
             self.input_details = self.interpreter.get_input_details()
@@ -141,6 +141,7 @@ class EmotionDetector:
             self.model = None
             logger.info(f"TFLite model loaded: {model_path}")
         else:
+            import tensorflow as tf
             self.model = tf.keras.models.load_model(model_path)
             self.interpreter = None
             logger.info(f"Keras model loaded: {model_path}")

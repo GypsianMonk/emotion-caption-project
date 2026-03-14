@@ -11,8 +11,6 @@ Design decisions:
   - L2 regularization on Dense layers
 """
 
-import tensorflow as tf
-from tensorflow.keras import layers, regularizers
 from typing import Dict, Any, Optional
 import logging
 

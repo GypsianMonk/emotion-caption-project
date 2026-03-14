@@ -67,11 +67,12 @@ class TestEmotionDetector:
         """Verify face preprocessing outputs correct shape."""
         from inference.emotion_detector import EmotionDetector
 
-        with patch("tensorflow.keras.models.load_model") as mock_load:
-            mock_load.return_value = MagicMock()
-            detector = EmotionDetector.__new__(EmotionDetector)
-            detector.input_size = 48
-            detector.use_tflite = False
+        # Build detector instance without loading a real model
+        detector = EmotionDetector.__new__(EmotionDetector)
+        detector.input_size = 48
+        detector.use_tflite = False
+        detector.model = MagicMock()
+        detector.interpreter = None
 
         # Create a dummy BGR face crop
         face_roi = np.random.randint(0, 255, (100, 80, 3), dtype=np.uint8)

@@ -19,7 +19,6 @@ import json
 import pickle
 import hashlib
 import numpy as np
-import tensorflow as tf
 from pathlib import Path
 from tqdm import tqdm
 from typing import List, Tuple, Dict, Optional
@@ -302,6 +301,7 @@ class COCOPreprocessor:
             return generator
 
         def build_tf_dataset(split: str, shuffle: bool) -> tf.data.Dataset:
+        import tensorflow as tf
             image_paths, _ = self._load_annotations(split)
             feat_dim = 2048
 

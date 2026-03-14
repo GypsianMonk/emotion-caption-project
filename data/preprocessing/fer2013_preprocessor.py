@@ -13,7 +13,6 @@ FER-2013 CSV format:
 import os
 import numpy as np
 import pandas as pd
-import tensorflow as tf
 from sklearn.utils.class_weight import compute_class_weight
 from typing import Tuple, Dict, Optional
 import logging
@@ -109,6 +108,7 @@ class FER2013Preprocessor:
 
     def _build_augmentation_layer(self) -> tf.keras.Sequential:
         """Keras augmentation pipeline applied only during training."""
+        import tensorflow as tf
         return tf.keras.Sequential(
             [
                 tf.keras.layers.RandomFlip("horizontal"),
