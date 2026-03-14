@@ -31,6 +31,7 @@ jobs:
             opencv-python-headless==4.9.0.80 \
             nltk==3.9.1 \
             scikit-learn==1.5.2 \
+            python-multipart==0.0.22 \
             pytest==8.3.3 \
             pytest-asyncio==0.24.0
 
